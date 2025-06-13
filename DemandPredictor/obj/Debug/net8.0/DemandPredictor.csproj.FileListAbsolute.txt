@@ -66,3 +66,4 @@
 /mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/obj/Debug/net8.0/DemandPredictor.pdb
 /mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/obj/Debug/net8.0/DemandPredictor.genruntimeconfig.cache
 /mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/obj/Debug/net8.0/ref/DemandPredictor.dll
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/obj/Debug/net8.0/DemandPredictor.sourcelink.json
