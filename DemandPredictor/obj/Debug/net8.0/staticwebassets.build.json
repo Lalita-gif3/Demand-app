@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "2osOs3CWhxwudZ5+9ymN3I9vOJVZCYTPTNyRbd0YVPc=",
+  "Source": "DemandPredictor",
+  "BasePath": "_content/DemandPredictor",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

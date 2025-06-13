@@ -1,0 +1,100 @@
+<mat-card class="container">
+  <mat-card-title>Demand & Stock-out Predictor</mat-card-title>
+  <mat-card-content>
+    <form #predictionForm="ngForm" (ngSubmit)="onSubmit()">
+      <mat-form-field appearance="fill">
+        <mat-label>Product ID</mat-label>
+        <mat-select [(ngModel)]="selectedProductId" name="productId" required>
+          <mat-option *ngFor="let id of productIds" [value]="id">{{ id }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Start Date</mat-label>
+        <input matInput type="date" [(ngModel)]="startDate" name="startDate" required />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>End Date</mat-label>
+        <input matInput type="date" [(ngModel)]="endDate" name="endDate" required />
+      </mat-form-field>
+
+      <button
+        mat-raised-button
+        color="primary"
+        type="submit"
+        [disabled]="!predictionForm.valid || isLoading"
+      >
+        {{ isLoading ? 'Loading...' : 'Predict' }}
+      </button>
+    </form>
+
+    <!-- Loading indicator -->
+    <div *ngIf="isLoading" class="loading-indicator">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>Loading predictions...</p>
+    </div>
+
+    <!-- Prediction results -->
+    <div *ngIf="dataSource.data.length > 0">
+      <h3>Prediction Results</h3>
+
+      <!-- Data table -->
+      <div class="table-container">
+        <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+          <!-- Opening Stock Level Column -->
+          <ng-container matColumnDef="openingStockLevel">
+            <th mat-header-cell *matHeaderCellDef>Opening Stock</th>
+            <td mat-cell *matCellDef="let row">{{ row.openingStockLevel }}</td>
+          </ng-container>
+
+          <!-- Remaining Stock Level Column -->
+          <ng-container matColumnDef="remainingStockLevel">
+            <th mat-header-cell *matHeaderCellDef>Remaining Stock</th>
+            <td mat-cell *matCellDef="let row">{{ row.remainingStockLevel }}</td>
+          </ng-container>
+
+          <!-- Forecasted Demand Column -->
+          <ng-container matColumnDef="forecastedDemand">
+            <th mat-header-cell *matHeaderCellDef>Forecasted Demand</th>
+            <td mat-cell *matCellDef="let row">{{ row.forecastedDemand }}</td>
+          </ng-container>
+
+          <!-- Stockout Column -->
+          <ng-container matColumnDef="stockout">
+            <th mat-header-cell *matHeaderCellDef>Stockout</th>
+            <td mat-cell *matCellDef="let row">{{ row.stockout ? 'Yes' : 'No' }}</td>
+          </ng-container>
+
+          <!-- Date Column -->
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef>Date</th>
+            <td mat-cell *matCellDef="let row">{{ row.date }}</td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      </div>
+
+      <!-- Paginator -->
+      <mat-paginator [pageSizeOptions]="[5, 10, 20]"></mat-paginator>
+
+      <!-- Stockout Dates -->
+      <h3>Stock-out Dates</h3>
+      <p>{{ stockoutDates.length > 0 ? stockoutDates.join(', ') : 'No stock-outs predicted' }}</p>
+    </div>
+
+    <!-- Chart.js Line Chart -->
+    <h3>Demand Forecast </h3>
+    <div class="chart-container">
+      <canvas #forecastChart width="800" height="400"></canvas>
+    </div>
+
+    <!-- Backend Plot Image -->
+    <div *ngIf="plotUrl" class="plot-image-container">
+      <h3>Stockout threshold </h3>
+      <img [src]="plotUrl" alt="Forecast Plot" class="backend-plot" />
+    </div>
+  </mat-card-content>
+</mat-card>

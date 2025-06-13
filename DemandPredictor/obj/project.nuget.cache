@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "qZNE2v8w3vs=",
+  "success": true,
+  "projectFilePath": "/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/DemandPredictor.csproj",
+  "expectedPackageFiles": [
+    "/root/.nuget/packages/csvhelper/33.1.0/csvhelper.33.1.0.nupkg.sha512",
+    "/root/.nuget/packages/system.text.json/8.0.5/system.text.json.8.0.5.nupkg.sha512"
+  ],
+  "logs": []
+}

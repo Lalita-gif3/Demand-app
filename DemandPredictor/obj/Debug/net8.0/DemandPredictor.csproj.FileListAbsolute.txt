@@ -1,0 +1,68 @@
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/obj/Debug/net8.0/DemandPredictor.csproj.AssemblyReference.cache
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/obj/Debug/net8.0/DemandPredictor.GeneratedMSBuildEditorConfig.editorconfig
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/obj/Debug/net8.0/DemandPredictor.AssemblyInfoInputs.cache
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/obj/Debug/net8.0/DemandPredictor.AssemblyInfo.cs
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/obj/Debug/net8.0/DemandPredictor.csproj.CoreCompileInputs.cache
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/obj/Debug/net8.0/DemandPredictor.MvcApplicationPartsAssemblyInfo.cache
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/bin/Debug/net8.0/appsettings.Development.json
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/bin/Debug/net8.0/appsettings.json
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/bin/Debug/net8.0/demand-predictor-frontend/angular.json
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/bin/Debug/net8.0/demand-predictor-frontend/package-lock.json
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/bin/Debug/net8.0/demand-predictor-frontend/package.json
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/bin/Debug/net8.0/demand-predictor-frontend/tsconfig.app.json
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/bin/Debug/net8.0/demand-predictor-frontend/tsconfig.json
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/bin/Debug/net8.0/demand-predictor-frontend/tsconfig.spec.json
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/bin/Debug/net8.0/DemandPredictor
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/bin/Debug/net8.0/DemandPredictor.deps.json
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/bin/Debug/net8.0/DemandPredictor.runtimeconfig.json
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/bin/Debug/net8.0/DemandPredictor.dll
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/bin/Debug/net8.0/DemandPredictor.pdb
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/bin/Debug/net8.0/CsvHelper.dll
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/obj/Debug/net8.0/staticwebassets.build.json
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/obj/Debug/net8.0/staticwebassets.development.json
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/obj/Debug/net8.0/staticwebassets/msbuild.DemandPredictor.Microsoft.AspNetCore.StaticWebAssets.props
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/obj/Debug/net8.0/staticwebassets/msbuild.build.DemandPredictor.props
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/obj/Debug/net8.0/staticwebassets/msbuild.buildMultiTargeting.DemandPredictor.props
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/obj/Debug/net8.0/staticwebassets/msbuild.buildTransitive.DemandPredictor.props
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/obj/Debug/net8.0/staticwebassets.pack.json
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/obj/Debug/net8.0/scopedcss/bundle/DemandPredictor.styles.css
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/obj/Debug/net8.0/DemandPr.D94DA157.Up2Date
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/obj/Debug/net8.0/DemandPredictor.dll
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/obj/Debug/net8.0/refint/DemandPredictor.dll
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/obj/Debug/net8.0/DemandPredictor.pdb
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/obj/Debug/net8.0/DemandPredictor.genruntimeconfig.cache
+/mnt/c/Users/lalit/OneDrive/Desktop/demand stockout app/DemandPredictor/obj/Debug/net8.0/ref/DemandPredictor.dll
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/bin/Debug/net8.0/appsettings.Development.json
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/bin/Debug/net8.0/appsettings.json
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/bin/Debug/net8.0/demand-predictor-frontend/angular.json
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/bin/Debug/net8.0/demand-predictor-frontend/package-lock.json
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/bin/Debug/net8.0/demand-predictor-frontend/package.json
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/bin/Debug/net8.0/demand-predictor-frontend/tsconfig.app.json
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/bin/Debug/net8.0/demand-predictor-frontend/tsconfig.json
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/bin/Debug/net8.0/demand-predictor-frontend/tsconfig.spec.json
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/bin/Debug/net8.0/DemandPredictor
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/bin/Debug/net8.0/DemandPredictor.deps.json
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/bin/Debug/net8.0/DemandPredictor.runtimeconfig.json
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/bin/Debug/net8.0/DemandPredictor.dll
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/bin/Debug/net8.0/DemandPredictor.pdb
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/bin/Debug/net8.0/CsvHelper.dll
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/obj/Debug/net8.0/DemandPredictor.csproj.AssemblyReference.cache
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/obj/Debug/net8.0/DemandPredictor.GeneratedMSBuildEditorConfig.editorconfig
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/obj/Debug/net8.0/DemandPredictor.AssemblyInfoInputs.cache
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/obj/Debug/net8.0/DemandPredictor.AssemblyInfo.cs
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/obj/Debug/net8.0/DemandPredictor.csproj.CoreCompileInputs.cache
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/obj/Debug/net8.0/DemandPredictor.MvcApplicationPartsAssemblyInfo.cache
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/obj/Debug/net8.0/staticwebassets.build.json
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/obj/Debug/net8.0/staticwebassets.development.json
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/obj/Debug/net8.0/staticwebassets/msbuild.DemandPredictor.Microsoft.AspNetCore.StaticWebAssets.props
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/obj/Debug/net8.0/staticwebassets/msbuild.build.DemandPredictor.props
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/obj/Debug/net8.0/staticwebassets/msbuild.buildMultiTargeting.DemandPredictor.props
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/obj/Debug/net8.0/staticwebassets/msbuild.buildTransitive.DemandPredictor.props
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/obj/Debug/net8.0/staticwebassets.pack.json
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/obj/Debug/net8.0/scopedcss/bundle/DemandPredictor.styles.css
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/obj/Debug/net8.0/DemandPr.D94DA157.Up2Date
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/obj/Debug/net8.0/DemandPredictor.dll
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/obj/Debug/net8.0/refint/DemandPredictor.dll
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/obj/Debug/net8.0/DemandPredictor.pdb
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/obj/Debug/net8.0/DemandPredictor.genruntimeconfig.cache
+/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/obj/Debug/net8.0/ref/DemandPredictor.dll
