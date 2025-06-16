@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import ray
 from ray import serve
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from statsmodels.tools.sm_exceptions import ConvergenceWarning
 from pmdarima import auto_arima
@@ -44,6 +45,7 @@ try:
             logger.info(f"Stock data for {pid}:\n{stock_data.to_string()}")
 except Exception as e:
     logger.error(f"Error loading dataset: {e}")
+    df = pd.DataFrame()  # Initialize empty DataFrame to avoid AttributeError later
     PRODUCT_IDS = []
 
 # Exogenous variables for SARIMAX
@@ -87,9 +89,22 @@ class NewDataRequest(BaseModel):
     Quarter: int | None = None
     Is_Weekend: int | None = None
 
-
 # FastAPI app for Ray Serve
 app = FastAPI()
+
+# Configure CORS
+origins = [
+    "http://20.174.3.84:4200",  # Angular's default dev server
+    "*"  # Allow all origins for debugging (remove in production)
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @serve.deployment(name="ForecastingService", num_replicas=1)
 @serve.ingress(app)
@@ -141,7 +156,7 @@ class ForecastingService:
         exog_future = exog_future.reindex(dates, method="ffill")
         
         forecast_vals = self.fitted_models[product_id].forecast(steps=forecast_days, exog=exog_future)
-        forecast_vals = np.clip(forecast_vals,0, None)
+        forecast_vals = np.clip(forecast_vals, 0, None)
         forecast_vals = np.round(forecast_vals).astype(int)  # Round forecasted demand to integers
 
         return pd.DataFrame({
@@ -302,7 +317,7 @@ class ForecastingService:
                 "product_id": req.product_id,
                 "Date": pd.to_datetime(req.date),
                 "Sales Volume": req.sales_volume,
-                "Opening Stock Level": req.current_stock_level,
+                "Opening Stock Level": req.opening_stock_level,
                 "Remaining Stock Level": req.remaining_stock_level,
                 "Reorder Point": reorder,
                 "Lead Time (Days)": lead_time
@@ -328,12 +343,30 @@ class ForecastingService:
 
     @app.get("/products")
     async def get_products(self):
-        return {"product_ids": self.product_ids}
+        return self.product_ids
 
+# Main block to run the service
+# Add this at the top of the main block
 if __name__ == "__main__":
-    ray.init(address="auto")  # Connect to existing Ray cluster
-    # Start Serve with HTTP options
-    serve.start(http_options={"host": "0.0.0.0", "port": 8000})
-    # Run the deployment
-    serve.run(ForecastingService.bind())
-    
+    try:
+        # Connect to existing Ray cluster
+        ray.init(address="172.20.139.208:6379", ignore_reinit_error=True)
+        
+        # Shut down the existing 'default' application if it exists
+        try:
+            serve.delete("default")
+            print("Shut down existing 'default' application.")
+        except Exception as e:
+            print(f"No 'default' application to shut down: {e}")
+        
+        # Start Ray Serve with HTTP options
+        serve.start(http_options={"host": "0.0.0.0", "port": 8000})
+        
+        # Deploy the service
+        serve.run(ForecastingService.bind(), name="forecasting_service")
+        
+        print("Ray Serve is running on http://0.0.0.0:8000")
+        print("Access the API documentation at http://0.0.0.0:8000/docs")
+    except Exception as e:
+        logger.error(f"Failed to start Ray Serve: {e}")
+        print(f"Failed to start Ray Serve: {e}")

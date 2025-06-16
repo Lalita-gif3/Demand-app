@@ -53,15 +53,15 @@ export class PredictionComponent implements OnInit, AfterViewInit {
   isLoading: boolean = false;
 
   plotUrl: SafeResourceUrl | string = '';
-  hasChartData: boolean = false; // Track if chart data is available
+  hasChartData: boolean = false;
 
   displayedColumns: string[] = [
-  'openingStockLevel',
-  'remainingStockLevel',
-  'forecastedDemand',
-  'stockout',
-  'date'
-];
+    'openingStockLevel',
+    'remainingStockLevel',
+    'forecastedDemand',
+    'stockout',
+    'date'
+  ];
 
   dataSource = new MatTableDataSource<ForecastData>([]);
 
@@ -70,10 +70,13 @@ export class PredictionComponent implements OnInit, AfterViewInit {
   @ViewChild(MatSort) sort!: MatSort;
   chart: Chart | undefined;
 
+  // Hardcoded API base URL
+  private apiBaseUrl: string = 'http://20.174.3.84:8000/';
+
   constructor(private http: HttpClient, private sanitizer: DomSanitizer) {}
 
   ngOnInit() {
-    this.http.get<string[]>('http://localhost:5250/api/prediction/product-ids').subscribe({
+    this.http.get<string[]>(`${this.apiBaseUrl}/products`).subscribe({
       next: (data) => {
         console.log('Product IDs:', data);
         this.productIds = data;
@@ -83,7 +86,13 @@ export class PredictionComponent implements OnInit, AfterViewInit {
       },
       error: (error) => {
         console.error('Error fetching product IDs:', error);
-        alert('Failed to fetch product IDs. Please try again later.');
+        let errorMessage = 'Failed to fetch product IDs. Please try again later.';
+        if (error.status === 0) {
+          errorMessage += ` (Possible CORS or network issue. Check if the API server is running at ${this.apiBaseUrl}.)`;
+        } else if (error.status) {
+          errorMessage += ` (HTTP ${error.status}: ${error.statusText})`;
+        }
+        alert(errorMessage);
       }
     });
   }
@@ -104,9 +113,8 @@ export class PredictionComponent implements OnInit, AfterViewInit {
     this.stockoutDates = [];
     this.dataSource.data = [];
     this.plotUrl = '';
-    this.hasChartData = false; // Reset chart visibility
+    this.hasChartData = false;
 
-    // Clear existing chart if it exists
     if (this.chart) {
       this.chart.destroy();
       this.chart = undefined;
@@ -118,7 +126,7 @@ export class PredictionComponent implements OnInit, AfterViewInit {
       end_date: this.endDate
     };
 
-    this.http.post<any>('http://localhost:5250/api/prediction/predict', request).subscribe({
+    this.http.post<any>(`${this.apiBaseUrl}/predict`, request).subscribe({
       next: (response) => {
         console.log('API Response:', response);
         if (response.error) {
@@ -165,7 +173,13 @@ export class PredictionComponent implements OnInit, AfterViewInit {
       },
       error: (error) => {
         console.error('Error fetching prediction:', error);
-        alert('Failed to fetch prediction data. Please try again later.');
+        let errorMessage = 'Failed to fetch prediction data. Please try again later.';
+        if (error.status === 0) {
+          errorMessage += ` (Possible CORS or network issue. Check if the API server is running at ${this.apiBaseUrl}.)`;
+        } else if (error.status) {
+          errorMessage += ` (HTTP ${error.status}: ${error.statusText})`;
+        }
+        alert(errorMessage);
         this.isLoading = false;
         this.dataSource.data = [];
         this.hasChartData = false;
@@ -277,7 +291,6 @@ export class PredictionComponent implements OnInit, AfterViewInit {
       }
     });
 
-    // Update chart container visibility
     const chartContainer = this.forecastChart.nativeElement.parentElement;
     if (chartContainer) {
       chartContainer.classList.add('visible');

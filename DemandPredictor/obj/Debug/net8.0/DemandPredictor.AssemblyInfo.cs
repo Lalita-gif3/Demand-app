@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DemandPredictor")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c11ad424e336ad606ca549cad9ad7019096908e3")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+544e3e4c5f9ad40457112f28d9d3e1419bc360db")]
 [assembly: System.Reflection.AssemblyProductAttribute("DemandPredictor")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DemandPredictor")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
