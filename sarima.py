@@ -10,6 +10,7 @@ import ray
 from ray import serve
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from statsmodels.tools.sm_exceptions import ConvergenceWarning
 from pmdarima import auto_arima
@@ -22,16 +23,24 @@ from datetime import datetime
 # Setup paths
 DATA_PATH = "/mnt/c/Users/lalit/OneDrive/Desktop/demand app/cleaned_dataset.csv"
 MODEL_DIR = "models"
-os.makedirs(MODEL_DIR, exist_ok=True)
 
 # Logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 warnings.filterwarnings("ignore", category=ConvergenceWarning)
 
+# Create model directory
+try:
+    os.makedirs(MODEL_DIR, exist_ok=True)
+    logger.info(f"Model directory created: {MODEL_DIR}")
+except Exception as e:
+    logger.error(f"Failed to create model directory {MODEL_DIR}: {e}")
+
 # Load and validate data
 try:
     df = pd.read_csv(DATA_PATH, parse_dates=["Date"], dtype={"Opening Stock Level": float, "Remaining Stock Level": float})
+    if df.empty:
+        raise ValueError("Dataset is empty")
     PRODUCT_IDS = sorted(df["product_id"].dropna().unique())
     logger.info(f"Dataset loaded. Columns: {df.columns}")
     logger.info(f"Sample data:\n{df.head().to_string()}")
@@ -43,9 +52,13 @@ try:
             logger.warning(f"Invalid remaining stock levels for {pid}:\n{stock_data.to_string()}")
         else:
             logger.info(f"Stock data for {pid}:\n{stock_data.to_string()}")
+except FileNotFoundError:
+    logger.error(f"Dataset file not found: {DATA_PATH}")
+    df = pd.DataFrame()
+    PRODUCT_IDS = []
 except Exception as e:
     logger.error(f"Error loading dataset: {e}")
-    df = pd.DataFrame()  # Initialize empty DataFrame to avoid AttributeError later
+    df = pd.DataFrame()
     PRODUCT_IDS = []
 
 # Exogenous variables for SARIMAX
@@ -92,18 +105,13 @@ class NewDataRequest(BaseModel):
 # FastAPI app for Ray Serve
 app = FastAPI()
 
-# Configure CORS
-origins = [
-    "http://20.174.3.84:4200",  # Angular's default dev server
-    "*"  # Allow all origins for debugging (remove in production)
-]
-
+# Configure CORS to allow all origins, methods, and headers
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*"]
 )
 
 @serve.deployment(name="ForecastingService", num_replicas=1)
@@ -150,14 +158,13 @@ class ForecastingService:
         forecast_days = (pd.to_datetime(end_date) - pd.to_datetime(start_date)).days + 1
         dates = pd.date_range(start=start_date, end=end_date)
         
-        # Prepare exogenous variables for forecasting
         data = self.df[self.df["product_id"] == product_id]
         exog_future = data[EXOG_VARS].set_index(data["Date"]).resample("D").asfreq().fillna(method="ffill")
         exog_future = exog_future.reindex(dates, method="ffill")
         
         forecast_vals = self.fitted_models[product_id].forecast(steps=forecast_days, exog=exog_future)
         forecast_vals = np.clip(forecast_vals, 0, None)
-        forecast_vals = np.round(forecast_vals).astype(int)  # Round forecasted demand to integers
+        forecast_vals = np.round(forecast_vals).astype(int)
 
         return pd.DataFrame({
             "product_id": product_id,
@@ -220,7 +227,7 @@ class ForecastingService:
         for demand in merged["Forecasted Demand"]:
             stockout_flags.append(remaining - demand < 0)
             remaining = max(0, remaining - demand)
-            remaining = round(remaining)  # Round remaining stock to integer
+            remaining = round(remaining)
             simulated_remaining_stock.append(remaining)
 
         merged["Remaining Stock Level"] = simulated_remaining_stock
@@ -265,49 +272,59 @@ class ForecastingService:
         merged["abs_error"] = (merged["Forecasted Demand"] - merged["Sales Volume"]).abs()
         return round(merged["abs_error"].mean(), 2)
 
+    @app.get("/products")
+    async def get_products(self):
+        logger.info("Received GET request for /products")
+        if not self.product_ids:
+            logger.warning("No product IDs available. Returning error response.")
+            return JSONResponse(
+                content={"error": "No products available. Check dataset."},
+                status_code=404
+            )
+        logger.info(f"Returning product IDs: {self.product_ids}")
+        return JSONResponse(content=self.product_ids)
+
+    '''@app.options("/products")
+    async def options_products(self):
+        logger.info("Received OPTIONS request for /products")
+        return JSONResponse(content={})
+
+    @app.options("/predict")
+    async def options_predict(self):
+        logger.info("Received OPTIONS request for /predict")
+        return JSONResponse(content={})
+
+    @app.options("/add_data")
+    async def options_add_data(self):
+        logger.info("Received OPTIONS request for /add_data")
+        return JSONResponse(content={})'''
+
     @app.post("/predict")
     async def predict(self, req: PredictionRequest):
+        logger.info(f"Received POST request for /predict: {req}")
         try:
-            start, end = pd.to_datetime(req.start_date), pd.to_datetime(req.end_date)
-            if start >= end:
-                raise ValueError("Start date must be before end date")
-
+            start_date = pd.to_datetime(req.start_date)
+            end_date = pd.to_datetime(req.end_date)
+            if start_date > end_date:
+                raise ValueError("start_date must be before end_date")
+            if start_date < self.df["Date"].min() or end_date > self.df["Date"].max() + pd.Timedelta(days=365):
+                raise ValueError("Date range outside available data")
+            
             forecast_df = self.forecast(req.product_id, req.start_date, req.end_date)
-            forecast_result, plot = self.detect_stockout(req.product_id, forecast_df)
-
-            if "error" in forecast_result:
-                return {
-                    "product_id": req.product_id,
-                    "dates": [],
-                    "forecasted_demand": [],
-                    "current_stock_level": [],
-                    "remaining_stock_level": [],
-                    "stockout": [],
-                    "plot_url": "",
-                    "mae": None,
-                    "product_ids": self.product_ids,
-                    "error": forecast_result["error"]
-                }
-
+            result, plot = self.detect_stockout(req.product_id, forecast_df)
             mae = self.calc_mae(req.product_id, forecast_df, req.start_date, req.end_date)
-
-            return {
-                "product_id": req.product_id,
-                "dates": forecast_result["dates"],
-                "forecasted_demand": forecast_result["forecasted_demand"],
-                "current_stock_level": forecast_result["current_stock_level"],
-                "remaining_stock_level": forecast_result["remaining_stock_level"],
-                "stockout": forecast_result["stockout"],
-                "plot_url": f"data:image/png;base64,{plot}",
-                "mae": mae,
-                "product_ids": self.product_ids
-            }
+            result["mae"] = mae
+            result["plot"] = plot
+            
+            logger.info(f"Prediction successful for product_id {req.product_id}")
+            return JSONResponse(content=result)
         except Exception as e:
-            logger.error(f"Prediction failed: {e}")
-            return {"error": str(e), "product_ids": self.product_ids}
+            logger.error(f"Predict error: {e}")
+            return JSONResponse(content={"error": str(e)}, status_code=400)
 
     @app.post("/add_data")
     async def add_data(self, req: NewDataRequest):
+        logger.info(f"Received POST request for /add_data: {req}")
         try:
             prev_data = self.df[self.df["product_id"] == req.product_id]
             reorder = prev_data["Reorder Point"].iloc[-1] if not prev_data.empty else 0
@@ -329,44 +346,46 @@ class ForecastingService:
             self.df = pd.concat([self.df, new_row], ignore_index=True)
             self.df.to_csv(DATA_PATH, index=False)
 
-            # Remove cached model to force retraining
             model_path = os.path.join(MODEL_DIR, f"sarima_{req.product_id}.pkl")
             if os.path.exists(model_path):
                 os.remove(model_path)
             if req.product_id in self.fitted_models:
                 del self.fitted_models[req.product_id]
 
-            return {"message": "Data added successfully. Model will be updated lazily."}
+            logger.info(f"Data added successfully for product_id {req.product_id}")
+            return JSONResponse(content={"message": "Data added successfully. Model will be updated lazily."})
         except Exception as e:
             logger.error(f"Add data error: {e}")
-            return {"error": str(e)}
+            return JSONResponse(content={"error": str(e)})
 
-    @app.get("/products")
-    async def get_products(self):
-        return self.product_ids
-
-# Main block to run the service
-# Add this at the top of the main block
 if __name__ == "__main__":
     try:
-        # Connect to existing Ray cluster
-        ray.init(address="172.20.139.208:6379", ignore_reinit_error=True)
+        # Try connecting to the cluster, fall back to local if it fails
+        try:
+            ray.init(address="172.20.139.208:6379", ignore_reinit_error=True)
+            logger.info("Connected to Ray cluster")
+        except Exception as e:
+            logger.warning(f"Failed to connect to Ray cluster: {e}. Initializing local Ray instance.")
+            ray.init(ignore_reinit_error=True)
+            logger.info("Initialized local Ray instance")
         
-        # Shut down the existing 'default' application if it exists
         try:
             serve.delete("default")
-            print("Shut down existing 'default' application.")
+            logger.info("Shut down existing 'default' application")
         except Exception as e:
-            print(f"No 'default' application to shut down: {e}")
+            logger.info(f"No 'default' application to shut down: {e}")
         
-        # Start Ray Serve with HTTP options
         serve.start(http_options={"host": "0.0.0.0", "port": 8000})
-        
-        # Deploy the service
         serve.run(ForecastingService.bind(), name="forecasting_service")
-        
+        logger.info("Ray Serve is running on http://0.0.0.0:8000")
         print("Ray Serve is running on http://0.0.0.0:8000")
         print("Access the API documentation at http://0.0.0.0:8000/docs")
+        
+        import time
+        while True:
+            time.sleep(3600)
     except Exception as e:
         logger.error(f"Failed to start Ray Serve: {e}")
-        print(f"Failed to start Ray Serve: {e}")
+        serve.shutdown()
+        ray.shutdown()
+        raise SystemExit(f"Failed to start Ray Serve: {e}")

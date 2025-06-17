@@ -37,39 +37,44 @@
 
     <!-- Prediction results -->
     <div *ngIf="dataSource.data.length > 0">
-      <h3>Prediction Results</h3>
+      <!-- Stockout Dates -->
+      <h3>Stock-out Dates</h3>
+      <p>{{ stockoutDates.length > 0 ? stockoutDates.join(', ') : 'No stock-outs predicted' }}</p>
 
       <!-- Data table -->
       <div class="table-container">
-        <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
-          <!-- Opening Stock Level Column -->
-          <ng-container matColumnDef="openingStockLevel">
-            <th mat-header-cell *matHeaderCellDef>Opening Stock</th>
-            <td mat-cell *matCellDef="let row">{{ row.openingStockLevel }}</td>
+        <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
+          <!-- Date Column -->
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
+            <td mat-cell *matCellDef="let row">{{ row.date | date }}</td>
           </ng-container>
 
-          <!-- Remaining Stock Level Column -->
-          <ng-container matColumnDef="remainingStockLevel">
-            <th mat-header-cell *matHeaderCellDef>Remaining Stock</th>
-            <td mat-cell *matCellDef="let row">{{ row.remainingStockLevel }}</td>
+          <!-- Opening Stock Level Column -->
+          <ng-container matColumnDef="openingStockLevel">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Opening Stock</th>
+            <td mat-cell *matCellDef="let row">{{ row.openingStockLevel }}</td>
           </ng-container>
 
           <!-- Forecasted Demand Column -->
           <ng-container matColumnDef="forecastedDemand">
-            <th mat-header-cell *matHeaderCellDef>Forecasted Demand</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Forecasted Demand</th>
             <td mat-cell *matCellDef="let row">{{ row.forecastedDemand }}</td>
+          </ng-container>
+
+          <!-- Remaining Stock Level Column -->
+          <ng-container matColumnDef="remainingStockLevel">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Remaining Stock</th>
+            <td mat-cell *matCellDef="let row">{{ row.remainingStockLevel }}</td>
           </ng-container>
 
           <!-- Stockout Column -->
           <ng-container matColumnDef="stockout">
-            <th mat-header-cell *matHeaderCellDef>Stockout</th>
-            <td mat-cell *matCellDef="let row">{{ row.stockout ? 'Yes' : 'No' }}</td>
-          </ng-container>
-
-          <!-- Date Column -->
-          <ng-container matColumnDef="date">
-            <th mat-header-cell *matHeaderCellDef>Date</th>
-            <td mat-cell *matCellDef="let row">{{ row.date }}</td>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Stockout</th>
+            <td mat-cell *matCellDef="let row">
+              <span *ngIf="row.stockout" class="stockout-yes">Yes</span>
+              <span *ngIf="!row.stockout" class="stockout-no">No</span>
+            </td>
           </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
@@ -78,23 +83,21 @@
       </div>
 
       <!-- Paginator -->
-      <mat-paginator [pageSizeOptions]="[5, 10, 20]"></mat-paginator>
-
-      <!-- Stockout Dates -->
-      <h3>Stock-out Dates</h3>
-      <p>{{ stockoutDates.length > 0 ? stockoutDates.join(', ') : 'No stock-outs predicted' }}</p>
+      <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
     </div>
 
     <!-- Chart.js Line Chart -->
-    <h3>Demand Forecast </h3>
     <div class="chart-container">
-      <canvas #forecastChart width="800" height="400"></canvas>
-    </div>
-
-    <!-- Backend Plot Image -->
-    <div *ngIf="plotUrl" class="plot-image-container">
-      <h3>Stockout threshold </h3>
-      <img [src]="plotUrl" alt="Forecast Plot" class="backend-plot" />
+      <h3>Demand Forecast and Stockout Risk</h3>
+      <div class="chart-wrapper">
+        <canvas #forecastChart></canvas>
+      </div>
+      <div class="chart-legend">
+        <div class="legend-item stockout">
+          <div class="color-box"></div>
+          <span>Stockout Risk Period</span>
+        </div>
+      </div>
     </div>
   </mat-card-content>
 </mat-card>

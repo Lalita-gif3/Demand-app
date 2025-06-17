@@ -11,19 +11,11 @@ import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { MatSortModule, MatSort } from '@angular/material/sort';
 import { HttpClient } from '@angular/common/http';
 import Chart from 'chart.js/auto';
-import annotationPlugin, { BoxAnnotationOptions } from 'chartjs-plugin-annotation';
+import annotationPlugin, { AnnotationOptions } from 'chartjs-plugin-annotation';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
+// Register annotation plugin globally
 Chart.register(annotationPlugin);
-
-interface ForecastData {
-  date: string;
-  forecastedDemand: string;
-  remainingStockLevel: string;
-  openingStockLevel: string;
-  stockout: boolean;
-}
 
 @Component({
   selector: 'app-prediction',
@@ -46,21 +38,21 @@ interface ForecastData {
 })
 export class PredictionComponent implements OnInit, AfterViewInit {
   productIds: string[] = [];
-  selectedProductId: string = 'P00003';
-  startDate: string = '2024-04-22';
-  endDate: string = '2024-04-29';
+  selectedProductId: string = '';
+  startDate: string = this.getDefaultStartDate();
+  endDate: string = this.getDefaultEndDate();
   stockoutDates: string[] = [];
   isLoading: boolean = false;
+  mae: number | null = null;
 
-  plotUrl: SafeResourceUrl | string = '';
   hasChartData: boolean = false;
 
   displayedColumns: string[] = [
+    'date',
     'openingStockLevel',
-    'remainingStockLevel',
     'forecastedDemand',
-    'stockout',
-    'date'
+    'remainingStockLevel',
+    'stockout'
   ];
 
   dataSource = new MatTableDataSource<ForecastData>([]);
@@ -70,17 +62,31 @@ export class PredictionComponent implements OnInit, AfterViewInit {
   @ViewChild(MatSort) sort!: MatSort;
   chart: Chart | undefined;
 
-  // Hardcoded API base URL
-  private apiBaseUrl: string = 'http://20.174.3.84:8000/';
+  private apiBaseUrl: string = 'http://20.174.3.84:8000';
 
-  constructor(private http: HttpClient, private sanitizer: DomSanitizer) {}
+  constructor(private http: HttpClient) {}
 
   ngOnInit() {
+    this.fetchProductIds();
+  }
+
+  private getDefaultStartDate(): string {
+    const date = new Date();
+    date.setDate(date.getDate() + 1);
+    return date.toISOString().split('T')[0];
+  }
+
+  private getDefaultEndDate(): string {
+    const date = new Date();
+    date.setDate(date.getDate() + 8);
+    return date.toISOString().split('T')[0];
+  }
+
+  private fetchProductIds() {
     this.http.get<string[]>(`${this.apiBaseUrl}/products`).subscribe({
       next: (data) => {
-        console.log('Product IDs:', data);
         this.productIds = data;
-        if (!this.productIds.includes(this.selectedProductId) && this.productIds.length > 0) {
+        if (this.productIds.length > 0) {
           this.selectedProductId = this.productIds[0];
         }
       },
@@ -98,7 +104,6 @@ export class PredictionComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    console.log('ngAfterViewInit - Canvas available:', !!this.forecastChart);
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
   }
@@ -112,8 +117,8 @@ export class PredictionComponent implements OnInit, AfterViewInit {
     this.isLoading = true;
     this.stockoutDates = [];
     this.dataSource.data = [];
-    this.plotUrl = '';
     this.hasChartData = false;
+    this.mae = null;
 
     if (this.chart) {
       this.chart.destroy();
@@ -128,48 +133,37 @@ export class PredictionComponent implements OnInit, AfterViewInit {
 
     this.http.post<any>(`${this.apiBaseUrl}/predict`, request).subscribe({
       next: (response) => {
-        console.log('API Response:', response);
+        console.log('API response:', response);
         if (response.error) {
           alert(response.error);
           this.isLoading = false;
-          this.dataSource.data = [];
-          this.hasChartData = false;
           return;
         }
 
-        if (response.plot_url) {
-          this.plotUrl = this.sanitizer.bypassSecurityTrustResourceUrl(response.plot_url);
-        }
-
         const forecastData: ForecastData[] = response.dates.map((date: string, index: number) => {
-          const forecastedDemand = parseInt(response.forecasted_demand[index] || 0);
-          const remainingStockLevel = parseInt(response.remaining_stock_level[index] || 0);
-          const openingStockLevel = parseInt(response.current_stock_level[index] || 0);
-          const stockout = response.stockout[index] || false;
+          const dataPoint: ForecastData = {
+            date: date,
+            forecastedDemand: response.forecasted_demand[index],
+            remainingStockLevel: response.remaining_stock_level[index],
+            openingStockLevel: response.current_stock_level[index],
+            stockout: response.stockout[index]
+          };
 
-          if (stockout) {
+          if (dataPoint.stockout) {
             this.stockoutDates.push(date);
           }
 
-          return {
-            date,
-            forecastedDemand,
-            remainingStockLevel,
-            openingStockLevel,
-            stockout
-          };
+          return dataPoint;
         });
 
         this.dataSource.data = forecastData;
-        this.dataSource.paginator = this.paginator;
-        this.dataSource.sort = this.sort;
-
         this.hasChartData = forecastData.length > 0;
-        if (this.hasChartData) {
-          setTimeout(() => this.renderChart(), 0);
-        }
+        this.mae = response.mae;
 
-        this.isLoading = false;
+        setTimeout(() => {
+          this.renderChart();
+          this.isLoading = false;
+        }, 100);
       },
       error: (error) => {
         console.error('Error fetching prediction:', error);
@@ -181,119 +175,186 @@ export class PredictionComponent implements OnInit, AfterViewInit {
         }
         alert(errorMessage);
         this.isLoading = false;
-        this.dataSource.data = [];
-        this.hasChartData = false;
       }
     });
   }
 
   renderChart() {
     console.log('Attempting to render chart...');
-    if (!this.forecastChart || !this.forecastChart.nativeElement) {
+    
+    if (!this.forecastChart?.nativeElement) {
       console.error('Canvas element not found');
       return;
     }
 
     const ctx = this.forecastChart.nativeElement.getContext('2d');
     if (!ctx) {
-      console.error('Could not get canvas context');
+      console.error('Could not get 2D context');
       return;
     }
 
-    if (!this.hasChartData || this.dataSource.data.length === 0) {
-      console.warn('No data available to render chart');
-      return;
-    }
-
+    // Destroy existing chart if exists
     if (this.chart) {
       this.chart.destroy();
     }
 
     const forecastData = this.dataSource.data;
-    const dates = forecastData.map(d => d.date);
-    const demands = forecastData.map(d => parseFloat(d.forecastedDemand));
-    const remainingStocks = forecastData.map(d => parseFloat(d.remainingStockLevel));
-    const currentStocks = forecastData.map(d => parseFloat(d.openingStockLevel));
+    if (forecastData.length === 0) {
+      console.warn('No data available to render chart');
+      return;
+    }
 
-    const stockoutAnnotations: BoxAnnotationOptions[] = this.stockoutDates.map(date => ({
+    const dates = forecastData.map(d => d.date);
+    const demands = forecastData.map(d => d.forecastedDemand);
+    const remainingStocks = forecastData.map(d => d.remainingStockLevel);
+    const currentStocks = forecastData.map(d => d.openingStockLevel);
+
+    console.log('Chart data:', {
+      dates,
+      demands,
+      remainingStocks,
+      currentStocks
+    });
+
+    // Create stockout regions data
+    const stockoutRegions: {start: number, end: number}[] = [];
+    let inStockout = false;
+    let startIndex = -1;
+    
+    for (let i = 0; i < forecastData.length; i++) {
+      if (forecastData[i].stockout && !inStockout) {
+        // Start of a stockout period
+        inStockout = true;
+        startIndex = i;
+      } else if (!forecastData[i].stockout && inStockout) {
+        // End of a stockout period
+        inStockout = false;
+        stockoutRegions.push({
+          start: startIndex,
+          end: i - 1
+        });
+      }
+    }
+    
+    // Handle case where stockout continues to the end
+    if (inStockout) {
+      stockoutRegions.push({
+        start: startIndex,
+        end: forecastData.length - 1
+      });
+    }
+
+    // Create annotations for stockout regions
+    const stockoutAnnotations: AnnotationOptions[] = stockoutRegions.map(region => ({
       type: 'box',
-      xMin: date,
-      xMax: date,
-      backgroundColor: 'rgba(255, 0, 0, 0.2)',
-      borderColor: 'rgba(255, 0, 0, 0.5)',
+      xMin: dates[region.start],
+      xMax: dates[region.end],
+      backgroundColor: 'rgba(255, 99, 132, 0.2)',
+      borderColor: 'rgba(255, 99, 132, 0.5)',
       borderWidth: 1,
       label: {
-        content: 'Stock-Out',
-        enabled: true,
-        position: 'center'
+        content: 'Stockout Risk',
+        display: true,
+        position: 'center',
+        backgroundColor: 'rgba(255, 99, 132, 0.8)',
+        color: 'white',
+        font: {
+          size: 12,
+          weight: 'bold'
+        }
       }
     }));
 
-    this.chart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: dates,
-        datasets: [
-          {
-            label: 'Forecasted Demand',
-            data: demands,
-            borderColor: '#3b82f6',
-            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-            fill: false,
-            tension: 0.1,
-            pointRadius: 4,
-            pointHoverRadius: 6
-          },
-          {
-            label: 'Remaining Stock Level',
-            data: remainingStocks,
-            borderColor: '#10b981',
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-            fill: false,
-            tension: 0.1,
-            pointRadius: 4,
-            pointHoverRadius: 6
-          },
-          {
-            label: 'Opening Stock Level',
-            data: currentStocks,
-            borderColor: '#f59e0b',
-            backgroundColor: 'rgba(245, 158, 11, 0.1)',
-            fill: false,
-            tension: 0.1,
-            pointRadius: 4,
-            pointHoverRadius: 6
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: {
-            title: { display: true, text: 'Date' },
-            ticks: { maxRotation: 45, minRotation: 45 }
-          },
-          y: {
-            title: { display: true, text: 'Units' },
-            beginAtZero: true,
-            suggestedMax: Math.max(...demands, ...remainingStocks, ...currentStocks) * 1.1
-          }
-        },
-        plugins: {
-          legend: { position: 'top' },
-          tooltip: { mode: 'index', intersect: false },
-          annotation: {
-            annotations: stockoutAnnotations
-          }
-        },
-        interaction: { mode: 'nearest', axis: 'x', intersect: false }
-      }
-    });
+    console.log('Stockout annotations:', stockoutAnnotations);
 
-    const chartContainer = this.forecastChart.nativeElement.parentElement;
-    if (chartContainer) {
-      chartContainer.classList.add('visible');
+    try {
+      this.chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: dates,
+          datasets: [
+            {
+              label: 'Forecasted Demand',
+              data: demands,
+              borderColor: '#3b82f6',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              fill: false,
+              tension: 0.1,
+              pointRadius: 4,
+              pointHoverRadius: 6
+            },
+            {
+              label: 'Opening Stock Level',
+              data: currentStocks,
+              borderColor: '#f59e0b',
+              backgroundColor: 'rgba(245, 158, 11, 0.1)',
+              fill: false,
+              tension: 0.1,
+              pointRadius: 4,
+              pointHoverRadius: 6
+            },
+            {
+              label: 'Remaining Stock Level',
+              data: remainingStocks,
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              fill: false,
+              tension: 0.1,
+              pointRadius: 4,
+              pointHoverRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              type: 'category',
+              title: { display: true, text: 'Date' },
+              ticks: { maxRotation: 45, minRotation: 45 }
+            },
+            y: {
+              title: { display: true, text: 'Units' },
+              beginAtZero: true,
+              suggestedMax: Math.max(...demands, ...remainingStocks, ...currentStocks) * 1.1
+            }
+          },
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: { 
+              mode: 'index', 
+              intersect: false,
+              callbacks: {
+                label: function(context) {
+                  let label = context.dataset.label || '';
+                  if (label) {
+                    label += ': ';
+                  }
+                  if (context.parsed.y !== null) {
+                    label += context.parsed.y;
+                  }
+                  return label;
+                }
+              }
+            },
+            annotation: {
+              annotations: stockoutAnnotations as any
+            }
+          }
+        }
+      });
+      console.log('Chart created successfully');
+    } catch (error) {
+      console.error('Error creating chart:', error);
     }
   }
+}
+
+interface ForecastData {
+  date: string;
+  forecastedDemand: number;
+  remainingStockLevel: number;
+  openingStockLevel: number;
+  stockout: boolean;
 }

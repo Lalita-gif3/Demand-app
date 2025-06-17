@@ -1,11 +1,15 @@
 {
   "version": 2,
-  "dgSpecHash": "qZNE2v8w3vs=",
+  "dgSpecHash": "TyBFHgueILs=",
   "success": true,
-  "projectFilePath": "/mnt/c/Users/lalit/OneDrive/Desktop/demand app/DemandPredictor/DemandPredictor.csproj",
+  "projectFilePath": "C:\\Users\\lalit\\OneDrive\\Desktop\\demand app\\DemandPredictor\\DemandPredictor.csproj",
   "expectedPackageFiles": [
-    "/root/.nuget/packages/csvhelper/33.1.0/csvhelper.33.1.0.nupkg.sha512",
-    "/root/.nuget/packages/system.text.json/8.0.5/system.text.json.8.0.5.nupkg.sha512"
+    "C:\\Users\\lalit\\.nuget\\packages\\csvhelper\\33.1.0\\csvhelper.33.1.0.nupkg.sha512",
+    "C:\\Users\\lalit\\.nuget\\packages\\system.text.json\\8.0.5\\system.text.json.8.0.5.nupkg.sha512",
+    "C:\\Users\\lalit\\.nuget\\packages\\microsoft.netcore.app.ref\\8.0.16\\microsoft.netcore.app.ref.8.0.16.nupkg.sha512",
+    "C:\\Users\\lalit\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\8.0.16\\microsoft.windowsdesktop.app.ref.8.0.16.nupkg.sha512",
+    "C:\\Users\\lalit\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\8.0.16\\microsoft.aspnetcore.app.ref.8.0.16.nupkg.sha512",
+    "C:\\Users\\lalit\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\8.0.16\\microsoft.netcore.app.host.win-x64.8.0.16.nupkg.sha512"
   ],
   "logs": []
 }

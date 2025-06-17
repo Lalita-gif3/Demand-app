@@ -4,10 +4,6 @@
   "compileOnSave": false,
   "compilerOptions": {
     "outDir": "./dist/out-tsc",
-    "baseUrl": "src",  // Set baseUrl to src for easier imports
-    "paths": {
-      "@environments/*": ["environments/*"]  // Path alias for environments
-    },
     "strict": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
@@ -27,12 +23,5 @@
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
     "strictTemplates": true
-  },
-  "include": [
-    "src/**/*"  // Include all files in the src directory
-  ],
-  "exclude": [
-    "node_modules",  // Exclude node_modules
-    "dist"  // Exclude the output directory
-  ]
+  }
 }
